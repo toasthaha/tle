@@ -30,7 +30,7 @@ protected:
 	std::ifstream labelFile;	// label input file
 	cv::VideoCapture Cap;		// Read video
 	cv::Mat currentFrame;		// Frame readded
-	int currentFrameNum;		// Current Fream Num
+	int currentFrameId;			// Current Fream Id
 	
 	//===================
 	// Tracker setting 
@@ -54,7 +54,7 @@ public:
 	};
 
 	//load
-	bool load(std::string videofile,std::string labelfile);
+	bool load(std::string videoName,std::string labelName);
 
 	// Resets the track
     void reset();
@@ -70,6 +70,11 @@ public:
 
     // Returns the current game screen
     cv::Mat getScreen();
+
+	// Returns the current frame Id
+	int getCurrentFrameId(){
+		return currentFrameId;
+	}
 
 };
 

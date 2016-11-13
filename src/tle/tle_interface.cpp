@@ -4,14 +4,18 @@ using namespace std;
 using namespace cv;
 
 // Load video file
-bool TLEInterface::load(string videofile,string labelfile){
-	
-	// open label file
-	labelFile.open(labelfile);
+bool TLEInterface::load(string videoName,string labelName){
 
-	// open video file
-	Cap.open(videofile);
-	// Check is video file open sucess 
+	// Open label file
+	labelFile.open(labelName);
+	// Check if label file open sucess
+	if(labelFile.is_open()==false)
+		return false;
+
+
+	// Open video file
+	Cap.open(videoName);
+	// Check if video file open sucess 
 	if(Cap.isOpened()==false)
 		return false;
 	else
@@ -20,6 +24,9 @@ bool TLEInterface::load(string videofile,string labelfile){
 
 // Reset the track
 void TLEInterface::reset(){
+
+	//Set current frame id to 0
+	currentFrameId = 0;
 
 	//Reset labelfile
 	labelFile.clear();                 // clear fail and eof bits
@@ -44,19 +51,29 @@ reward_t TLEInterface::act(Action action){
 
 	//only single object tracking now
 	labelFile>>frameId>>trackId>>category>>x1>>y1>>x2>>y2;
-	while (trackId !=1)
+	
+	while (trackId < 1 || frameId < currentFrameId ){
+		if( frameId > currentFrameId ){
+			return 0;
+		}
 		labelFile>>frameId>>trackId>>category>>x1>>y1>>x2>>y2;
+	}
+	if(trackId != 1)
+		return 0;
+
+	//cout << frameId << " " << trackId << " " << category << " " << x1 << "," << y1 << "," << x2 << ","<< y2 << "\n"; 	
+	
 	groundtruth.x = x1;
 	groundtruth.y = y1;
 	groundtruth.width = x2-x1;
-	groundtruth.height = y1-y2;
+	groundtruth.height = y2-y1;
 	
 	
 	if(action==TRACK){
 		result = tracker->update(currentFrame);
 		// using result calculating reward
-		result = result | groundtruth;
-		return result.area()/groundtruth.area();
+		result = result & groundtruth;
+		return (double)result.area()/groundtruth.area();
 	}else if(action==DECTECT){
 		tracker->init( groundtruth, currentFrame );
 		return -5;
@@ -73,6 +90,7 @@ ActionVect TLEInterface::getLegalActionSet() {
 // Returns the current game screen
 Mat TLEInterface::getScreen() {
 	Cap >> currentFrame;
+	currentFrameId = Cap.get(CV_CAP_PROP_POS_FRAMES);
 	return currentFrame;
 };
 
