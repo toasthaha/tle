@@ -38,7 +38,7 @@ void TLEInterface::reset(){
 
 // Indicates if the tracking has ended
 bool TLEInterface::isEnded() {
-	return currentFrame.empty();
+	return videoEnded;
 };
 
 // Do action and return reeard 
@@ -99,13 +99,16 @@ reward_t TLEInterface::act(Action action){
 
 // Returns the vector of legal actions. 
 ActionVect TLEInterface::getLegalActionSet() {
-	ActionVect legalSet(DECTECT,TRACK);
+	ActionVect legalSet(2);
+	legalSet[0] = TRACK;
+	legalSet[1] = DECTECT;
+	cout << "ActionVect : "<<legalSet.size()<< endl;
 	return legalSet;
 };
 
 // Returns the current game screen
 Mat TLEInterface::getScreen() {
-	Cap >> currentFrame;
+	videoEnded = !Cap.read(currentFrame);
 	currentFrameId = Cap.get(CV_CAP_PROP_POS_FRAMES);
 	return currentFrame;
 };
@@ -130,5 +133,14 @@ Rect TLEInterface::box2Rect(box in){
 	out.width  = in.y2-in.y1;
 	return out;
 }
-	
+
+std::string action_to_string(int a){
+	static string tmp_action_to_string[] = {
+		"TRACK",
+		"DECTECT"
+	};
+	assert( a >=0 && a<=1 );
+	return tmp_action_to_string[a];
+
+}	
 

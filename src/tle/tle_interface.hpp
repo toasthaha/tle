@@ -14,8 +14,8 @@
 static const std::string Version = "0.1";
 
 enum Action {
-	DECTECT = 1,
-	TRACK	= 2
+	DECTECT = 0,
+	TRACK	= 1
 };
 
 typedef double reward_t;
@@ -37,7 +37,8 @@ protected:
 	int currentFrameId;			// Current Fream Id
 	box nextBox;				// Next frame's 1st track target
 	std::vector<bool>trackerOn;	// Showing each tracker is working or not 
-	
+	bool videoEnded;			// Video End	
+
 	//===================
 	// Tracker setting 
 	//===================
@@ -89,5 +90,7 @@ public:
 	cv::Rect box2Rect(box in);
 
 };
+
+std::string action_to_string(int a);
 
 #endif
