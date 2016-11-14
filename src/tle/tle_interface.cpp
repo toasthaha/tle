@@ -41,44 +41,60 @@ bool TLEInterface::isEnded() {
 	return currentFrame.empty();
 };
 
-// TODO add reward 
 // Do action and return reeard 
 // First time need to use DECTECT to reset tracker 
 reward_t TLEInterface::act(Action action){
-	Rect result,groundtruth;
-	string category;
-	int frameId,trackId,x1,y1,x2,y2;
 
-	//only single object tracking now
-	labelFile>>frameId>>trackId>>category>>x1>>y1>>x2>>y2;
-	
-	while (trackId < 1 || frameId < currentFrameId ){
-		if( frameId > currentFrameId ){
+	box in;
+	Rect result;
+	vector<Rect>groundtruth(maxNumTrackers);
+	vector<bool>groundtruthValid(maxNumTrackers,false);
+
+	// pre-fetch
+	if(currentFrameId==1){
+		in = readInputLabel();
+		nextBox = in;
+	}
+
+	//take the pre-fetch one
+	in = nextBox;
+	while (in.frameId == currentFrameId ){
+		// store box into groundtruth
+		groundtruth[in.trackId-1] = box2Rect(in);
+		groundtruthValid[in.trackId-1] = true;
+		// read next input
+		if(labelFile.eof())
 			return 0;
-		}
-		labelFile>>frameId>>trackId>>category>>x1>>y1>>x2>>y2;
+		in = readInputLabel();
 	}
-	if(trackId != 1)
-		return 0;
+	nextBox = in;
 
-	//cout << frameId << " " << trackId << " " << category << " " << x1 << "," << y1 << "," << x2 << ","<< y2 << "\n"; 	
-	
-	groundtruth.x = x1;
-	groundtruth.y = y1;
-	groundtruth.width = x2-x1;
-	groundtruth.height = y2-y1;
-	
-	
-	if(action==TRACK){
-		result = tracker->update(currentFrame);
-		// using result calculating reward
-		result = result & groundtruth;
-		return (double)result.area()/groundtruth.area();
-	}else if(action==DECTECT){
-		tracker->init( groundtruth, currentFrame );
-		return -5;
+	double score = 0;
+	for(int t=0,count=0; t<maxNumTrackers; t++){
+		if(action==TRACK){
+			if(trackerOn[t]){
+				result = tracker[t].update(currentFrame);
+			}
+			if(groundtruthValid[t]==true){
+				if(trackerOn[t]==false)
+					score += -1;
+				else{
+					// using result calculating reward
+					result = result & groundtruth[t];
+					score += (double)result.area()/groundtruth[t].area();
+				}
+				count++;
+			}
+			score /= count;
+		}else if(action==DECTECT){
+			trackerOn[t] = groundtruthValid[t];
+			if(groundtruthValid[t]){
+				tracker[t].init( groundtruth[t], currentFrame );
+			}
+			score =  -5;
+		}
 	}
-	return -1;
+	return score;
 };
 
 // Returns the vector of legal actions. 
@@ -93,4 +109,26 @@ Mat TLEInterface::getScreen() {
 	currentFrameId = Cap.get(CV_CAP_PROP_POS_FRAMES);
 	return currentFrame;
 };
+
+// Read Input label file
+box TLEInterface::readInputLabel(){
+	box in;
+	labelFile>>in.frameId>>in.trackId>>in.category \
+	  		 >>in.x1>>in.y1>>in.x2>>in.y2;		
+
+	//cout<<in.frameId<<" "<<in.trackId<<" "<<in.category \
+	<<" "<<in.x1<<","<<in.y1<<","<<in.x2<<","<<in.y2<<"\n"; 	
+	return in;
+}
+
+// Convert box into Rect
+Rect TLEInterface::box2Rect(box in){
+	Rect out;
+	out.x = in.x1;
+	out.y = in.y1;
+	out.height = in.x2-in.x1;
+	out.width  = in.y2-in.y1;
+	return out;
+}
+	
 

@@ -3,7 +3,7 @@
 
 int main( int argc, char* argv[]){
 	
-	TLEInterface tle;
+	TLEInterface tle(10);
 	std::string labelFile = "/users/student/mr104/toasthaha/work/dashcam/label/000002.txt";
 	std::string videoFile = "/users/student/mr104/toasthaha/work/dashcam/videos/000002.mp4";
 	
@@ -19,5 +19,4 @@ int main( int argc, char* argv[]){
 		tle.getScreen();
 		std::cout << tle.getCurrentFrameId() << " score "<< tle.act( TRACK ) << std::endl;
 	}
-	std::cout << 0.987654321987654321987654321 << std::endl;
 }

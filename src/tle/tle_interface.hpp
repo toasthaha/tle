@@ -20,17 +20,23 @@ enum Action {
 
 typedef double reward_t;
 typedef std::vector<Action> ActionVect;
-
+typedef struct BOX{
+	std::string category;
+	int frameId,trackId,x1,y1,x2,y2;
+}box;
 
 class TLEInterface
 {
 protected:
     reward_t episode_score; 	// Score accumulated throughout the course of an episode
-    int max_num_frames;     	// Maximum number of frames for each episode
+    int maxNumFrames;  		   	// Maximum number of frames for each episode
+	int maxNumTrackers;			// Maximum number of trackers
 	std::ifstream labelFile;	// label input file
 	cv::VideoCapture Cap;		// Read video
 	cv::Mat currentFrame;		// Frame readded
 	int currentFrameId;			// Current Fream Id
+	box nextBox;				// Next frame's 1st track target
+	std::vector<bool>trackerOn;	// Showing each tracker is working or not 
 	
 	//===================
 	// Tracker setting 
@@ -39,19 +45,19 @@ protected:
 	bool FIXEDWINDOW = false;
 	bool MULTISCALE = true;
 	bool LAB = false;
-	KCFTracker* tracker;
+	std::vector<KCFTracker> tracker;
 	//===================
 
 public:
 	// Constructor
-	TLEInterface(){
-		 tracker = new KCFTracker(HOG,FIXEDWINDOW,MULTISCALE,LAB);
+	TLEInterface(int trackerNum){
+		maxNumTrackers = trackerNum;
+		tracker.resize(maxNumTrackers);
+		trackerOn.resize(maxNumTrackers,false);
 	};
     
 	//Destructor
-	~TLEInterface(){
-		delete tracker;
-	};
+	~TLEInterface(){};
 
 	//load
 	bool load(std::string videoName,std::string labelName);
@@ -75,6 +81,12 @@ public:
 	int getCurrentFrameId(){
 		return currentFrameId;
 	}
+
+	// Read input label file
+	box readInputLabel();
+	
+	// Convert box into Rect
+	cv::Rect box2Rect(box in);
 
 };
 
