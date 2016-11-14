@@ -10,5 +10,5 @@ To build
 
 Reference 
 	[1] KCFTracker : https://github.com/joaofaro/KCFcpp
-	[2] DQN-in-caffe : https://github.com/toasthaha/dqn-in-the-caffe        
+	[2] DQN-in-caffe : https://github.com/toasthaha/dqn-in-the-caffe
 	[3] Arcade Learning Enviroment : http://www.arcadelearningenvironment.org
