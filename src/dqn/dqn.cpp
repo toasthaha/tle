@@ -222,11 +222,11 @@ Action DQN::SelectAction(const InputFrames& last_frames, const double epsilon) {
     const auto random_idx =
         std::uniform_int_distribution<int>(0, legal_actions_.size() - 1)(random_engine);
     action = legal_actions_[random_idx];
-    std::cout << action_to_string(action) << " (random)";
+    //std::cout << action_to_string(action) << " (random)";
   } else {
-    std::cout << action_to_string(action) << " (greedy)";
+    //std::cout << action_to_string(action) << " (greedy)";
   }
-  std::cout << " epsilon:" << epsilon << std::endl;
+  //std::cout << " epsilon:" << epsilon << std::endl;
   return action;
 }
 
@@ -268,7 +268,7 @@ std::vector<std::pair<Action, float>> DQN::SelectActionGreedily(
         q_values.begin(),
         action_evaluator);
     if (last_frames_batch.size() == 1) {
-      std::cout << PrintQValues(q_values, legal_actions_);
+      //std::cout << PrintQValues(q_values, legal_actions_);
     }
 
     // Select the action with the maximum Q value

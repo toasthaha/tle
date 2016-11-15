@@ -27,6 +27,7 @@ add_subdirectory(src/tracker)
 
 FILE(GLOB_RECURSE sourcefiles "src/dqn/*.cpp")
 add_executable( dqn ${sourcefiles} )
+
 target_link_libraries( dqn ${OpenCV_LIBS} )
 target_link_libraries( dqn tracker )
 target_link_libraries( dqn tle )
@@ -62,5 +63,7 @@ if(USE_CUDNN)
   target_link_libraries(dqn cudnn)
 endif()
 
-
+add_executable( runtle src/tle/runtle.cpp src/tle/tle_interface.cpp )
+target_link_libraries( runtle ${OpenCV_LIBS})
+target_link_libraries( runtle tracker )
 

@@ -4,7 +4,7 @@ Requirement
 	Please follow instructions in [2], install their Caffe branch "dqn"
 
 To build
-  1. mkdir build
+  1. mkdir build; cd build;
   2. cmake ..
   3. make 
 

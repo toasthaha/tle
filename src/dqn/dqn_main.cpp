@@ -6,7 +6,6 @@
 #include "prettyprint.hpp"
 #include "dqn.hpp"
 
-DEFINE_bool(gpu, false, "Use GPU to brew Caffe");
 DEFINE_bool(gui, false, "Open a GUI window");
 DEFINE_string(rom, "breakout.bin", "Atari 2600 ROM to play");
 DEFINE_string(solver, "dqn_solver.prototxt", "Solver parameter file (*.prototxt)");
@@ -43,10 +42,12 @@ double PlayOneEpisode(
 	auto immediate_score = 0.0;
 	auto reward = 0.0;
 	Action action;
-	cv::Mat rawFrame = tle.getScreen();
+	cv::Mat rawFrame;
+	
+	reward = tle.act(DECTECT);
+	rawFrame = tle.getScreen();
 
   	for(int frame=0 ;!tle.isEnded();rawFrame=tle.getScreen(),frame++){
-		std::cout << "frame: " << frame << std::endl;
    	 	//Read frames and preprocess
 		const auto current_frame = dqn::PreprocessScreen(rawFrame);
 		if (FLAGS_show_frame) {
@@ -96,17 +97,13 @@ int main(int argc, char** argv) {
   google::InstallFailureSignalHandler();
   google::LogToStderr();
 
-  if (FLAGS_gpu) {
-    caffe::Caffe::set_mode(caffe::Caffe::GPU);
-  } else {
-    caffe::Caffe::set_mode(caffe::Caffe::CPU);
-  }
+  caffe::Caffe::set_mode(caffe::Caffe::GPU);
 
   TLEInterface tle(10);
 
   // Load the ROM file
-  std::string labelFile = "/users/student/mr104/toasthaha/work/dashcam/label/000002.txt";
-  std::string videoFile = "/users/student/mr104/toasthaha/work/dashcam/videos/000002.mp4";
+  std::string labelFile = "/users/student/mr104/toasthaha/work/dashcam/label/000001.txt";
+  std::string videoFile = "/users/student/mr104/toasthaha/work/dashcam/videos/000001.mp4";
   if(tle.load(videoFile,labelFile)==false)
 	std::cout << " open file failed " << std::endl;
 
@@ -135,7 +132,7 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  for (auto episode = 0; episode<2 ; episode++) {
+  for (auto episode = 0; ; episode++) {
     std::cout << "episode: " << episode << std::endl;
     const auto epsilon = CalculateEpsilon(dqn.current_iteration());
     PlayOneEpisode(tle, dqn, epsilon, true);

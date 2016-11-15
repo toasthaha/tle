@@ -23,6 +23,7 @@ typedef std::vector<Action> ActionVect;
 typedef struct BOX{
 	std::string category;
 	int frameId,trackId,x1,y1,x2,y2;
+	float confident = 1.0;
 }box;
 
 class TLEInterface

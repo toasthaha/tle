@@ -12,7 +12,6 @@ bool TLEInterface::load(string videoName,string labelName){
 	if(labelFile.is_open()==false)
 		return false;
 
-
 	// Open video file
 	Cap.open(videoName);
 	// Check if video file open sucess 
@@ -58,6 +57,8 @@ reward_t TLEInterface::act(Action action){
 
 	//take the pre-fetch one
 	in = nextBox;
+
+	//read GroundTruthLabel
 	while (in.frameId == currentFrameId ){
 		// store box into groundtruth
 		groundtruth[in.trackId-1] = box2Rect(in);
@@ -70,7 +71,9 @@ reward_t TLEInterface::act(Action action){
 	nextBox = in;
 
 	double score = 0;
-	for(int t=0,count=0; t<maxNumTrackers; t++){
+	int count = 0;
+
+	for(int t=0; t<maxNumTrackers; t++){
 		if(action==TRACK){
 			if(trackerOn[t]){
 				result = tracker[t].update(currentFrame);
@@ -84,8 +87,7 @@ reward_t TLEInterface::act(Action action){
 					score += (double)result.area()/groundtruth[t].area();
 				}
 				count++;
-			}
-			score /= count;
+			}	
 		}else if(action==DECTECT){
 			trackerOn[t] = groundtruthValid[t];
 			if(groundtruthValid[t]){
@@ -94,7 +96,10 @@ reward_t TLEInterface::act(Action action){
 			score =  -5;
 		}
 	}
-	return score;
+	if(action==TRACK && count>0)
+		score /= count;
+
+	return score/5;
 };
 
 // Returns the vector of legal actions. 
@@ -136,8 +141,8 @@ Rect TLEInterface::box2Rect(box in){
 
 std::string action_to_string(int a){
 	static string tmp_action_to_string[] = {
-		"TRACK",
-		"DECTECT"
+		"DECTECT",
+		"TRACK"
 	};
 	assert( a >=0 && a<=1 );
 	return tmp_action_to_string[a];
