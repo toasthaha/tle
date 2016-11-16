@@ -45,9 +45,13 @@ bool TLEInterface::isEnded() {
 reward_t TLEInterface::act(Action action){
 
 	box in;
-	Rect result;
+	Rect result,resultTrue;
 	vector<Rect>groundtruth(maxNumTrackers);
 	vector<bool>groundtruthValid(maxNumTrackers,false);
+
+	//get Next frame
+	videoEnded = !Cap.read(currentFrame);
+	currentFrameId = Cap.get(CV_CAP_PROP_POS_FRAMES);
 
 	// pre-fetch
 	if(currentFrameId==1){
@@ -71,7 +75,8 @@ reward_t TLEInterface::act(Action action){
 	nextBox = in;
 
 	double score = 0;
-	int count = 0;
+	double trackerScore = 0;
+	int count = 0;	
 
 	for(int t=0; t<maxNumTrackers; t++){
 		if(action==TRACK){
@@ -83,38 +88,38 @@ reward_t TLEInterface::act(Action action){
 					score += -1;
 				else{
 					// using result calculating reward
-					result = result & groundtruth[t];
-					score += (double)result.area()/groundtruth[t].area();
+					resultTrue = result & groundtruth[t];
+					trackerScore  = (double)(resultTrue.area())/groundtruth[t].area();
+					trackerScore += (double)(resultTrue.area()-result.area())/result.area();
+					score += trackerScore;
 				}
 				count++;
 			}	
-		}else if(action==DECTECT){
+		}else if(action==DETECT){
 			trackerOn[t] = groundtruthValid[t];
 			if(groundtruthValid[t]){
 				tracker[t].init( groundtruth[t], currentFrame );
 			}
-			score =  -5;
+			score =  -DETECT_TIME_PENALTY;
 		}
 	}
 	if(action==TRACK && count>0)
 		score /= count;
 
-	return score/5;
+	return score/DETECT_TIME_PENALTY;
 };
 
 // Returns the vector of legal actions. 
 ActionVect TLEInterface::getLegalActionSet() {
 	ActionVect legalSet(2);
-	legalSet[0] = TRACK;
-	legalSet[1] = DECTECT;
+	legalSet[0] = DETECT;
+	legalSet[1] = TRACK;
 	cout << "ActionVect : "<<legalSet.size()<< endl;
 	return legalSet;
 };
 
 // Returns the current game screen
 Mat TLEInterface::getScreen() {
-	videoEnded = !Cap.read(currentFrame);
-	currentFrameId = Cap.get(CV_CAP_PROP_POS_FRAMES);
 	return currentFrame;
 };
 
@@ -141,7 +146,7 @@ Rect TLEInterface::box2Rect(box in){
 
 std::string action_to_string(int a){
 	static string tmp_action_to_string[] = {
-		"DECTECT",
+		"DETECT",
 		"TRACK"
 	};
 	assert( a >=0 && a<=1 );

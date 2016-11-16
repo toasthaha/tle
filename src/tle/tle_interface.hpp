@@ -10,13 +10,14 @@
 //target tracker
 #include "kcftracker.hpp"
 
-
+#define DETECT_TIME_PENALTY 5
 static const std::string Version = "0.1";
 
 enum Action {
-	DECTECT = 0,
+	DETECT = 0,
 	TRACK	= 1
 };
+
 
 typedef double reward_t;
 typedef std::vector<Action> ActionVect;
@@ -52,7 +53,7 @@ protected:
 
 public:
 	// Constructor
-	TLEInterface(int trackerNum){
+	TLEInterface(int trackerNum,bool gui){
 		maxNumTrackers = trackerNum;
 		tracker.resize(maxNumTrackers);
 		trackerOn.resize(maxNumTrackers,false);
