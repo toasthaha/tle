@@ -20,6 +20,7 @@ DEFINE_string(model, "", "Model file to load");
 DEFINE_bool(evaluate, false, "Evaluation mode: only playing a game, no updates");
 DEFINE_double(evaluate_with_epsilon, 0.05, "Epsilon value to be used in evaluation mode");
 DEFINE_double(repeat_games, 1, "Number of games played in evaluation mode");
+DEFINE_string(input, "000001", "Input file");
 
 double CalculateEpsilon(const int iter) {
   if (iter < FLAGS_explore) {
@@ -52,20 +53,21 @@ double PlayOneEpisode(
 		if (FLAGS_show_frame) {
       		std::cout << dqn::DrawFrame(*current_frame) << std::endl;
    		}
-	    past_frames.push_back(current_frame);
-	
-	    if (past_frames.size() < dqn::kInputFrameCount) {
-    		// If there are not past frames enough for DQN input, just select TRACK
-			total_score += tle.act(TRACK);
-		 	continue;	
-			
-    	} else if (past_frames.size() > dqn::kInputFrameCount) 
-        		past_frames.pop_front();
-    
-		dqn::InputFrames input_frames;
-		std::copy(past_frames.begin(), past_frames.end(), input_frames.begin());
-		
+
 		if( frame%FLAGS_skip_frame == 0 ){
+	   		past_frames.push_back(current_frame);
+	
+	    	if (past_frames.size() < dqn::kInputFrameCount) {
+    			// If there are not past frames enough for DQN input, just select TRACK
+				total_score += tle.act(TRACK);
+			 	continue;	
+			
+    		} else if (past_frames.size() > dqn::kInputFrameCount) 
+        			past_frames.pop_front();
+    
+			dqn::InputFrames input_frames;
+			std::copy(past_frames.begin(), past_frames.end(), input_frames.begin());
+		
 			// Last action is repeated on skipped frames
 			action = dqn.SelectAction(input_frames, epsilon);
 			immediate_score += tle.act(action);
@@ -102,9 +104,16 @@ int main(int argc, char** argv) {
   TLEInterface tle(10,FLAGS_gui);
 
   // Load the ROM file
-  std::string labelFile = "/users/student/mr104/toasthaha/work/dashcam/label/000001.txt";
-  std::string videoFile = "/users/student/mr104/toasthaha/work/dashcam/videos/000001.mp4";
-  if(tle.load(videoFile,labelFile)==false)
+  std::string labelName = "/data/cedl/dashcam/labels/";
+  std::string videoName = "/data/cedl/dashcam/videos/";
+
+  labelName += FLAGS_input + ".txt";
+  videoName += FLAGS_input + ".mp4";
+
+  std::cout << labelName << std::endl;
+  std::cout << videoName << std::endl;
+
+  if(tle.load(videoName,labelName)==false)
 	std::cout << " open file failed " << std::endl;
 
   // Get the vector of legal actions
