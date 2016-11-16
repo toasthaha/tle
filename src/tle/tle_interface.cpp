@@ -33,6 +33,7 @@ void TLEInterface::reset(){
 
 	//Reset videofile
 	Cap.set(CV_CAP_PROP_POS_MSEC, 0);
+
 };
 
 // Indicates if the tracking has ended

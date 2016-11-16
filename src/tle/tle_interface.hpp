@@ -60,7 +60,15 @@ public:
 	};
     
 	//Destructor
-	~TLEInterface(){};
+	~TLEInterface(){
+		if(labelFile.is_open())
+			labelFile.close();
+		
+		// VideoFile will release automatically 
+		// by VideoCapture Destructor
+		//if(Cap.isOpened())
+		//	Cap.release();
+	};
 
 	//load
 	bool load(std::string videoName,std::string labelName);

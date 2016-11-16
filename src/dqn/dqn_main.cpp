@@ -1,5 +1,6 @@
 #include <cmath>
 #include <iostream>
+#include <fstream>
 #include <tle_interface.hpp>
 #include <glog/logging.h>
 #include <gflags/gflags.h>
@@ -131,14 +132,16 @@ int main(int argc, char** argv) {
     return 0;
   }
 
+  std::ofstream logFile("log.csv");
   for (auto episode = 0; episode < 400 ; episode++) {
     std::cout << "episode: " << episode << std::endl;
     const auto epsilon = CalculateEpsilon(dqn.current_iteration());
     PlayOneEpisode(tle, dqn, epsilon, true);
-    if (dqn.current_iteration() % 10 == 0) {
+    if (episode % 10 == 0) {
       // After every 10 episodes, evaluate the current strength
       const auto eval_score = PlayOneEpisode(tle, dqn, 0.05, false);
-      std::cout << dqn.current_iteration() <<"evaluation score: " << eval_score << std::endl;
+      std::cout << dqn.current_iteration() <<"\tevaluation score: " << eval_score << std::endl;
+	  logFile << episode << "," << dqn.current_iteration() << "," << eval_score << std::endl;
     }
   }
 };

@@ -12,13 +12,13 @@ int main( int argc, char* argv[]){
 		std::cout << "open file failed" << std::endl; 
 		return -1;
 	}
+
 	std::cout << "open file sucess" << std::endl;
 
 	double score =0;
 	score =  tle.act(DETECT);
 	while( tle.isEnded()==false){
-		score += tle.act(DETECT);
+		score += tle.act(TRACK);
 	}
 	std::cout<<"score "<<score<<std::endl;
-
 }
