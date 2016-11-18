@@ -54,6 +54,11 @@ double PlayOneEpisode(
       		std::cout << dqn::DrawFrame(*current_frame) << std::endl;
    		}
 
+		if(FLAGS_gui){
+			cv::imshow("Image",tle.getScreen());
+			cv::waitKey(1);	
+		}
+
 		if( frame%FLAGS_skip_frame == 0 ){
 	   		past_frames.push_back(current_frame);
 	
@@ -83,10 +88,14 @@ double PlayOneEpisode(
         		// If the size of replay memory is enough, update DQN
        			if (dqn.memory_size() > FLAGS_memory_threshold) 
        				dqn.Update();
-      		}
+      		}//else
+			 //	std::cout << std::setw(15) << immediate_score << std::setw(15) << total_score << std::endl;
 			immediate_score = 0;
-		}else
+		}else{
 			immediate_score += tle.act(TRACK);
+			//if(update==false)
+			//	std::cout << std::setw(15) << immediate_score << std::setw(15) << total_score << std::endl;
+		}
    	 }
   	 
 	 tle.reset();
@@ -103,7 +112,7 @@ int main(int argc, char** argv) {
 
   TLEInterface tle(10,FLAGS_gui);
 
-  // Load the ROM file
+  // Load input file
   std::string labelName = "/data/cedl/dashcam/labels/";
   std::string videoName = "/data/cedl/dashcam/videos/";
 
@@ -142,11 +151,11 @@ int main(int argc, char** argv) {
   }
 
   std::ofstream logFile("log.csv");
-  for (auto episode = 0; episode < 400 ; episode++) {
+  for (auto episode = 0; episode < 5000 ; episode++) {
     std::cout << "episode: " << episode << std::endl;
     const auto epsilon = CalculateEpsilon(dqn.current_iteration());
     PlayOneEpisode(tle, dqn, epsilon, true);
-    if (episode % 10 == 0) {
+    if (episode % 30 == 0) {
       // After every 10 episodes, evaluate the current strength
       const auto eval_score = PlayOneEpisode(tle, dqn, 0.05, false);
       std::cout << dqn.current_iteration() <<"\tevaluation score: " << eval_score << std::endl;

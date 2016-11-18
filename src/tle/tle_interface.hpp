@@ -36,6 +36,7 @@ protected:
 	std::ifstream labelFile;	// label input file
 	cv::VideoCapture Cap;		// Read video
 	cv::Mat currentFrame;		// Frame readded
+	cv::Mat returnFrame;		// Frame returned
 	int currentFrameId;			// Current Fream Id
 	box nextBox;				// Next frame's 1st track target
 	std::vector<bool>trackerOn;	// Showing each tracker is working or not 

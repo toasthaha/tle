@@ -6,6 +6,10 @@ using namespace cv;
 // Load video file
 bool TLEInterface::load(string videoName,string labelName){
 
+	// if already open file	
+	if(labelFile.is_open())
+		labelFile.close();	
+
 	// Open label file
 	labelFile.open(labelName);
 	// Check if label file open sucess
@@ -46,13 +50,14 @@ bool TLEInterface::isEnded() {
 reward_t TLEInterface::act(Action action){
 
 	box in;
-	Rect result,resultTrue;
+	Rect result,resultTrue,plot;
 	vector<Rect>groundtruth(maxNumTrackers);
 	vector<bool>groundtruthValid(maxNumTrackers,false);
 
 	//get Next frame
 	videoEnded = !Cap.read(currentFrame);
 	currentFrameId = Cap.get(CV_CAP_PROP_POS_FRAMES);
+	returnFrame = currentFrame;
 
 	// pre-fetch
 	if(currentFrameId==1){
@@ -83,6 +88,7 @@ reward_t TLEInterface::act(Action action){
 		if(action==TRACK){
 			if(trackerOn[t]){
 				result = tracker[t].update(currentFrame);
+				plot = result;
 			}
 			if(groundtruthValid[t]==true){
 				if(trackerOn[t]==false)
@@ -100,14 +106,16 @@ reward_t TLEInterface::act(Action action){
 			trackerOn[t] = groundtruthValid[t];
 			if(groundtruthValid[t]){
 				tracker[t].init( groundtruth[t], currentFrame );
+				plot = groundtruth[t];
 			}
 			score =  -DETECT_TIME_PENALTY;
 		}
+		cv::circle(returnFrame,Point(plot.x+plot.width/2,plot.y+plot.height/2),20,Scalar(0,0,255),-1);
 	}
 	if(action==TRACK && count>0)
 		score /= count;
 
-	return score/DETECT_TIME_PENALTY;
+	return score;
 };
 
 // Returns the vector of legal actions. 
@@ -121,7 +129,7 @@ ActionVect TLEInterface::getLegalActionSet() {
 
 // Returns the current game screen
 Mat TLEInterface::getScreen() {
-	return currentFrame;
+	return returnFrame;
 };
 
 // Read Input label file
