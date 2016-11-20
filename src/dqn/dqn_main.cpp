@@ -47,7 +47,7 @@ double PlayOneEpisode(
 	
 	total_score = tle.act(DETECT);
 
-  	for(int frame=0 ;!tle.isEnded();frame++){
+  	for(int frame=1 ;!tle.isEnded();frame++){
    	 	//Read frames and preprocess
 		const auto current_frame = dqn::PreprocessScreen(tle.getScreen());
 		if (FLAGS_show_frame) {
@@ -65,6 +65,8 @@ double PlayOneEpisode(
 	    	if (past_frames.size() < dqn::kInputFrameCount) {
     			// If there are not past frames enough for DQN input, just select TRACK
 				total_score += tle.act(TRACK);
+				total_score += immediate_score = 0;
+				immediate_score = 0;
 			 	continue;	
 			
     		} else if (past_frames.size() > dqn::kInputFrameCount) 
@@ -77,7 +79,14 @@ double PlayOneEpisode(
 			action = dqn.SelectAction(input_frames, epsilon);
 			immediate_score += tle.act(action);
 			total_score += immediate_score;
-			reward = (immediate_score == 0)? 0 : immediate_score / std::abs(immediate_score);
+			//reward = (immediate_score == 0)? 0 : immediate_score / std::abs(immediate_score);
+			reward = immediate_score / (FLAGS_skip_frame*DETECT_TIME_PENALTY);
+
+			// clip reward if too big or too small
+			if(reward>=1)
+				reward =  1;
+			else if(reward<=-1)
+				reward = -1; 
 
 			if (update) {
         		// Add the current transition to replay memory
@@ -86,8 +95,13 @@ double PlayOneEpisode(
         	    dqn::Transition(input_frames, action, reward, dqn::PreprocessScreen(tle.getScreen()));
    		     	dqn.AddTransition(transition);
         		// If the size of replay memory is enough, update DQN
-       			if (dqn.memory_size() > FLAGS_memory_threshold) 
-       				dqn.Update();
+       			if (dqn.memory_size() > FLAGS_memory_threshold){ 
+					dqn.Update();
+					// Speedup training  
+					if(dqn.current_iteration()>FLAGS_explore){
+						dqn.Update();
+					}
+				}
       		}//else
 			 //	std::cout << std::setw(15) << immediate_score << std::setw(15) << total_score << std::endl;
 			immediate_score = 0;
@@ -151,13 +165,17 @@ int main(int argc, char** argv) {
   }
 
   std::ofstream logFile("log.csv");
-  for (auto episode = 0; episode < 5000 ; episode++) {
+  for (auto episode = 0; dqn.current_iteration() < 20000 ; episode++) {
     std::cout << "episode: " << episode << std::endl;
     const auto epsilon = CalculateEpsilon(dqn.current_iteration());
     PlayOneEpisode(tle, dqn, epsilon, true);
-    if (episode % 30 == 0) {
+    if (episode % 10 == 0) {
       // After every 10 episodes, evaluate the current strength
-      const auto eval_score = PlayOneEpisode(tle, dqn, 0.05, false);
+      float eval_score = 0.0;
+	  for(int t =0 ; t < 3 ; t++)
+          eval_score += PlayOneEpisode(tle, dqn, 0.05, false);
+	  eval_score /= 3;
+
       std::cout << dqn.current_iteration() <<"\tevaluation score: " << eval_score << std::endl;
 	  logFile << episode << "," << dqn.current_iteration() << "," << eval_score << std::endl;
     }

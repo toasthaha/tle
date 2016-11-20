@@ -8,10 +8,11 @@
 int main( int argc, char* argv[]){
 	
 	bool gui = true;
-	TLEInterface tle(10,gui);
+	TLEInterface tle(15,gui);
 	
 
-	for(int t=1 ; t<=976; t++){
+	//for(int t=1 ; t<=976; t++){
+	for(int t=2 ; t<=2; t++){
   		std::stringstream labelName;
 	  	std::stringstream videoName; 
 	
@@ -35,13 +36,13 @@ int main( int argc, char* argv[]){
 
 		score = tle.act(DETECT);
 		for(int frame=1;  tle.isEnded()==false; frame++){
-			if(frame%PERIOD==0)
+			if(frame%PERIOD==0||tle.getTrackerCount()>20)
 				imScore = tle.act(DETECT);
 			else
 				imScore = tle.act(TRACK);
 
 			score += imScore ;
-			//std::cout << std::setw(15) << imScore \
+			std::cout << std::setw(15) << imScore \
             	      << std::setw(15) << score   << std::endl;
 		}
 

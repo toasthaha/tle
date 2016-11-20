@@ -1,5 +1,7 @@
 
 #include "tle_interface.hpp"
+#include "math.h"
+
 using namespace std;
 using namespace cv;
 
@@ -81,39 +83,45 @@ reward_t TLEInterface::act(Action action){
 	nextBox = in;
 
 	double score = 0;
-	double trackerScore = 0;
-	int count = 0;	
 
 	for(int t=0; t<maxNumTrackers; t++){
+		// ACTION TRACK
 		if(action==TRACK){
 			if(trackerOn[t]){
 				result = tracker[t].update(currentFrame);
 				plot = result;
 			}
-			if(groundtruthValid[t]==true){
-				if(trackerOn[t]==false)
-					score += -1;
-				else{
+			if(groundtruthValid[t]){
+				if(trackerOn[t]){
 					// using result calculating reward
 					resultTrue = result & groundtruth[t];
-					trackerScore  = (double)(resultTrue.area())/groundtruth[t].area();
-					trackerScore += (double)(resultTrue.area()-result.area())/result.area();
-					score += trackerScore;
+					score  += (double)(resultTrue.area())/groundtruth[t].area() \
+			 	 		    + (double)(resultTrue.area()-result.area())/result.area();
 				}
-				count++;
+				else{
+					score += -1;
+				}
 			}	
+		// ACTION DETECTION
 		}else if(action==DETECT){
+			// Reset tracker Count
+			if(t==0)trackerCount = 0;
+
+			// Reset each tracker 
 			trackerOn[t] = groundtruthValid[t];
 			if(groundtruthValid[t]){
 				tracker[t].init( groundtruth[t], currentFrame );
 				plot = groundtruth[t];
+				trackerCount++;
 			}
-			score =  -DETECT_TIME_PENALTY;
 		}
-		cv::circle(returnFrame,Point(plot.x+plot.width/2,plot.y+plot.height/2),20,Scalar(0,0,255),-1);
+		if(trackerOn[t])
+			cv::circle(returnFrame,Point(plot.x+plot.width/2,plot.y+plot.height/2),30,Scalar(255,0,0),-1);
 	}
-	if(action==TRACK && count>0)
-		score /= count;
+	if(action==TRACK && trackerCount>0)
+		score /= trackerCount;
+	else if(action==DETECT)
+		score = -DETECT_TIME_PENALTY+ceil(trackerCount/4);
 
 	return score;
 };
@@ -125,6 +133,11 @@ ActionVect TLEInterface::getLegalActionSet() {
 	legalSet[1] = TRACK;
 	cout << "ActionVect : "<<legalSet.size()<< endl;
 	return legalSet;
+};
+
+// Returns tracker count
+int TLEInterface::getTrackerCount(){
+	return trackerCount;
 };
 
 // Returns the current game screen

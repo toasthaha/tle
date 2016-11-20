@@ -33,6 +33,7 @@ protected:
     reward_t episode_score; 	// Score accumulated throughout the course of an episode
     int maxNumFrames;  		   	// Maximum number of frames for each episode
 	int maxNumTrackers;			// Maximum number of trackers
+	int trackerCount;			// current turned on trackers
 	std::ifstream labelFile;	// label input file
 	cv::VideoCapture Cap;		// Read video
 	cv::Mat currentFrame;		// Frame readded
@@ -85,6 +86,9 @@ public:
 
     // Returns the vector of legal actions. 
     ActionVect getLegalActionSet();
+
+	// Returns tracker count
+	int getTrackerCount();
 
     // Returns the current game screen
     cv::Mat getScreen();
