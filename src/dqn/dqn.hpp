@@ -26,7 +26,7 @@ constexpr auto kInputDataSize = kCroppedFrameDataSize * kInputFrameCount;
 constexpr auto kMinibatchSize = 32;
 constexpr auto kMinibatchDataSize = kInputDataSize * kMinibatchSize;
 constexpr auto kGamma = 0.95f;
-constexpr auto kOutputCount = 2;
+constexpr auto kOutputCount = 18;
 
 using FrameData = std::array<uint8_t, kCroppedFrameDataSize>;
 using FrameDataSp = std::shared_ptr<FrameData>;

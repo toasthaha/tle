@@ -4,7 +4,7 @@
 #include <iomanip>
 #include "tle_interface.hpp"
 
-#define PERIOD 15
+#define PERIOD 10
 int main( int argc, char* argv[]){
 	
 	bool gui = true;

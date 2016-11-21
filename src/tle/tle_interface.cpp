@@ -116,12 +116,12 @@ reward_t TLEInterface::act(Action action){
 			}
 		}
 		if(trackerOn[t])
-			cv::circle(returnFrame,Point(plot.x+plot.width/2,plot.y+plot.height/2),30,Scalar(255,0,0),-1);
+			cv::circle(returnFrame,Point(plot.x+plot.width/2,plot.y+plot.height/2),30,Scalar(0,255,0),-1);
 	}
 	if(action==TRACK && trackerCount>0)
 		score /= trackerCount;
 	else if(action==DETECT)
-		score = -DETECT_TIME_PENALTY+ceil(trackerCount/4);
+		score = -DETECT_TIME_PENALTY+ceil((double)trackerCount/4);
 
 	return score;
 };
