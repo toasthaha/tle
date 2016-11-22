@@ -50,9 +50,6 @@ double PlayOneEpisode(
   	for(int frame=1 ;!tle.isEnded();frame++){
    	 	//Read frames and preprocess
 		const auto current_frame = dqn::PreprocessScreen(tle.getScreen());
-		if (FLAGS_show_frame) {
-      		std::cout << dqn::DrawFrame(*current_frame) << std::endl;
-   		}
 
 		if(FLAGS_gui){
 			cv::imshow("Image",tle.getScreen());

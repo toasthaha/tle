@@ -65,8 +65,7 @@ reward_t TLEInterface::act(Action action){
 		in = readInputLabel();
 		nextBox = in;
 	}
-
-	//take the pre-fetch one
+	//take the pre-fetched one
 	in = nextBox;
 
 	//read GroundTruthLabel
@@ -83,13 +82,12 @@ reward_t TLEInterface::act(Action action){
 	}
 	nextBox = in;
 
-	//backgrouind subtraction
+	//background subtraction
 	Mat tempFrame;
 	bgSubtractor(currentFrame,tempFrame,0.5);
 	returnFrame = currentFrame;
 	maskFrame = Mat::ones(currentFrame.size(),CV_8UC1);
 	maskFrame.setTo(0,tempFrame);
-	//returnFrame.setTo(Scalar(0,0,0),mask);
 
 
 	double score = 0;

@@ -11,7 +11,7 @@
 #include "kcftracker.hpp"
 
 #define DETECT_TIME_PENALTY 8
-static const std::string Version = "0.2";
+static const std::string Version = "0.3";
 
 enum Action {
 	DETECT = 0,
