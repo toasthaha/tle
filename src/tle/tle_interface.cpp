@@ -59,14 +59,6 @@ reward_t TLEInterface::act(Action action){
 	//get Next frame
 	videoEnded = !Cap.read(currentFrame);
 	currentFrameId = Cap.get(CV_CAP_PROP_POS_FRAMES);
-	returnFrame = currentFrame;
-
-	//backgrouind subtraction
-	bgSubtractor(currentFrame,maskFrame,0.5);
-	returnFrame = currentFrame;
-	Mat mask = Mat::ones(currentFrame.size(),CV_8UC1);
-	mask.setTo(0,maskFrame);
-	//returnFrame.setTo(Scalar(0,0,0),mask);
 
 	// pre-fetch
 	if(currentFrameId==1){
@@ -83,14 +75,24 @@ reward_t TLEInterface::act(Action action){
 		groundtruth[in.trackId-1] = box2Rect(in);
 		groundtruthValid[in.trackId-1] = true;
 		// read next input
-		if(labelFile.eof())
-			return 0;
+		if(labelFile.eof()){
+			videoEnded = true;
+			break;
+		}
 		in = readInputLabel();
 	}
 	nextBox = in;
 
-	double score = 0;
+	//backgrouind subtraction
+	Mat tempFrame;
+	bgSubtractor(currentFrame,tempFrame,0.5);
+	returnFrame = currentFrame;
+	maskFrame = Mat::ones(currentFrame.size(),CV_8UC1);
+	maskFrame.setTo(0,tempFrame);
+	//returnFrame.setTo(Scalar(0,0,0),mask);
 
+
+	double score = 0;
 	for(int t=0; t<maxNumTrackers; t++){
 		// ACTION TRACK
 		if(action==TRACK){
@@ -123,7 +125,7 @@ reward_t TLEInterface::act(Action action){
 			}
 		}
 		if(trackerOn[t])
-			cv::rectangle(mask,Point(plot.x,plot.y),Point(plot.x+plot.width,plot.y+plot.height),0,-1);
+			cv::rectangle(maskFrame,Point(plot.x,plot.y),Point(plot.x+plot.width,plot.y+plot.height),0,-1);
 			//cv::circle(returnFrame,Point(plot.x+plot.width/2,plot.y+plot.height/2),30,Scalar(255,255,255),-1);
 	}
 	if(action==TRACK && trackerCount>0)
@@ -131,8 +133,10 @@ reward_t TLEInterface::act(Action action){
 	else if(action==DETECT)
 		score = -DETECT_TIME_PENALTY+ceil((double)trackerCount/4);
 
-
-	returnFrame.setTo(Scalar(0,0,0),mask);
+	// add mask to screen
+	returnFrame.setTo(Scalar(0,0,0),maskFrame);
+	// resize screen 
+	cv::resize(returnFrame,returnFrame,Point(84,84));
 
 	return score;
 };

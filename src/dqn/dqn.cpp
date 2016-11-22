@@ -72,13 +72,12 @@ uint8_t PixelToGrayscale(const pixel_t pixel) {
   return RGBToGrayscale(PixelToRGB(pixel));
 }
 
-FrameDataSp PreprocessScreen(const cv::Mat& raw_screen_t) {
-  cv::Mat raw_screen = raw_screen_t.t();
+FrameDataSp PreprocessScreen(const cv::Mat& raw_screen) {
   assert(raw_screen.cols == kRawFrameWidth);
   assert(raw_screen.rows == kRawFrameHeight);
   const auto raw_pixels = raw_screen;
   auto screen = std::make_shared<FrameData>();
-  assert(kRawFrameHeight > kRawFrameWidth);
+  //assert(kRawFrameHeight > kRawFrameWidth);
   const auto x_ratio = kRawFrameWidth / static_cast<double>(kCroppedFrameSize);
   const auto y_ratio = kRawFrameHeight / static_cast<double>(kCroppedFrameSize);
   for (auto i = 0; i < kCroppedFrameSize; ++i) {
@@ -124,17 +123,6 @@ FrameDataSp PreprocessScreen(const cv::Mat& raw_screen_t) {
   return screen;
 }
 
-std::string DrawFrame(const FrameData& frame) {
-  std::ostringstream o;
-  for (auto row = 0; row < kCroppedFrameSize; ++row) {
-    for (auto col = 0; col < kCroppedFrameSize; ++col) {
-      o << std::hex <<
-          static_cast<int>(frame[row * kCroppedFrameSize + col] / 16);
-    }
-    o << std::endl;
-  }
-  return o.str();
-}
 
 std::string PrintQValues(
     const std::vector<float>& q_values, const ActionVect& actions) {

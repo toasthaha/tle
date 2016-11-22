@@ -88,6 +88,7 @@ double PlayOneEpisode(
         		const auto transition = tle.isEnded() ?
 	            dqn::Transition(input_frames, action, reward, boost::none) :
         	    dqn::Transition(input_frames, action, reward, dqn::PreprocessScreen(tle.getScreen()));
+
    		     	dqn.AddTransition(transition);
         		// If the size of replay memory is enough, update DQN
        			if (dqn.memory_size() > FLAGS_memory_threshold){ 
