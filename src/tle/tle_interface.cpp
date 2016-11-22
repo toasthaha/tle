@@ -61,6 +61,13 @@ reward_t TLEInterface::act(Action action){
 	currentFrameId = Cap.get(CV_CAP_PROP_POS_FRAMES);
 	returnFrame = currentFrame;
 
+	//backgrouind subtraction
+	bgSubtractor(currentFrame,maskFrame,0.5);
+	returnFrame = currentFrame;
+	Mat mask = Mat::ones(currentFrame.size(),CV_8UC1);
+	mask.setTo(0,maskFrame);
+	//returnFrame.setTo(Scalar(0,0,0),mask);
+
 	// pre-fetch
 	if(currentFrameId==1){
 		in = readInputLabel();
@@ -116,12 +123,16 @@ reward_t TLEInterface::act(Action action){
 			}
 		}
 		if(trackerOn[t])
-			cv::circle(returnFrame,Point(plot.x+plot.width/2,plot.y+plot.height/2),30,Scalar(0,255,0),-1);
+			cv::rectangle(mask,Point(plot.x,plot.y),Point(plot.x+plot.width,plot.y+plot.height),0,-1);
+			//cv::circle(returnFrame,Point(plot.x+plot.width/2,plot.y+plot.height/2),30,Scalar(255,255,255),-1);
 	}
 	if(action==TRACK && trackerCount>0)
 		score /= trackerCount;
 	else if(action==DETECT)
 		score = -DETECT_TIME_PENALTY+ceil((double)trackerCount/4);
+
+
+	returnFrame.setTo(Scalar(0,0,0),mask);
 
 	return score;
 };

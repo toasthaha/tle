@@ -10,8 +10,8 @@
 //target tracker
 #include "kcftracker.hpp"
 
-#define DETECT_TIME_PENALTY 5
-static const std::string Version = "0.1";
+#define DETECT_TIME_PENALTY 8
+static const std::string Version = "0.2";
 
 enum Action {
 	DETECT = 0,
@@ -38,10 +38,12 @@ protected:
 	cv::VideoCapture Cap;		// Read video
 	cv::Mat currentFrame;		// Frame readded
 	cv::Mat returnFrame;		// Frame returned
+	cv::Mat maskFrame;			// Frame mask
 	int currentFrameId;			// Current Fream Id
 	box nextBox;				// Next frame's 1st track target
 	std::vector<bool>trackerOn;	// Showing each tracker is working or not 
 	bool videoEnded;			// Video End	
+	cv::BackgroundSubtractorMOG2 bgSubtractor;
 
 	//===================
 	// Tracker setting 
@@ -55,7 +57,8 @@ protected:
 
 public:
 	// Constructor
-	TLEInterface(int trackerNum,bool gui){
+	TLEInterface(int trackerNum,bool gui)
+	:bgSubtractor(2,50,false){
 		maxNumTrackers = trackerNum;
 		tracker.resize(maxNumTrackers);
 		trackerOn.resize(maxNumTrackers,false);
