@@ -53,7 +53,7 @@ double PlayOneEpisode(
 
 		if(FLAGS_gui){
 			cv::imshow("Image",tle.getScreen());
-			cv::waitKey(1);	
+			cv::waitKey(100);	
 		}
 
 		if( frame%FLAGS_skip_frame == 0 ){

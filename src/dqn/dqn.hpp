@@ -17,8 +17,8 @@ typedef unsigned char pixel_t;
 
 namespace dqn {
 
-constexpr auto kRawFrameHeight = 84;//1280;
-constexpr auto kRawFrameWidth = 84;//720;
+constexpr auto kRawFrameHeight =84;// 1280;
+constexpr auto kRawFrameWidth = 84;// 720;
 constexpr auto kCroppedFrameSize = 84;
 constexpr auto kCroppedFrameDataSize = kCroppedFrameSize * kCroppedFrameSize;
 constexpr auto kInputFrameCount = 4;

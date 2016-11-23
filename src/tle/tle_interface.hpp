@@ -11,13 +11,12 @@
 #include "kcftracker.hpp"
 
 #define DETECT_TIME_PENALTY 8
-static const std::string Version = "0.3";
+static const std::string Version = "0.4";
 
 enum Action {
 	DETECT = 0,
-	TRACK	= 1
+	TRACK  = 1
 };
-
 
 typedef double reward_t;
 typedef std::vector<Action> ActionVect;
@@ -27,23 +26,29 @@ typedef struct BOX{
 	float confident = 1.0;
 }box;
 
+typedef struct FRAME{
+	int trackerCount=0;
+	cv::Mat rawFrame;
+	cv::Mat maskFrame;
+	std::vector<cv::Rect> groundtruth;
+	std::vector<bool> groundtruthValid;
+}frameData;
+
+typedef struct DASHCAM{
+	std::vector<frameData> frames;
+}dashcam;
+
+
 class TLEInterface
 {
 protected:
-    reward_t episode_score; 	// Score accumulated throughout the course of an episode
     int maxNumFrames;  		   	// Maximum number of frames for each episode
 	int maxNumTrackers;			// Maximum number of trackers
-	int trackerCount;			// current turned on trackers
-	std::ifstream labelFile;	// label input file
-	cv::VideoCapture Cap;		// Read video
-	cv::Mat currentFrame;		// Frame readded
-	cv::Mat returnFrame;		// Frame returned
-	cv::Mat maskFrame;			// Frame mask
+	int totalFrame;				// total Frames for current input 
 	int currentFrameId;			// Current Fream Id
-	box nextBox;				// Next frame's 1st track target
+	cv::Mat returnFrame;		// Frame returned
+	dashcam input;				// input data struct
 	std::vector<bool>trackerOn;	// Showing each tracker is working or not 
-	bool videoEnded;			// Video End	
-	cv::BackgroundSubtractorMOG2 bgSubtractor;
 
 	//===================
 	// Tracker setting 
@@ -57,23 +62,14 @@ protected:
 
 public:
 	// Constructor
-	TLEInterface(int trackerNum,bool gui)
-	:bgSubtractor(2,50,false){
+	TLEInterface(int trackerNum,bool gui){
 		maxNumTrackers = trackerNum;
 		tracker.resize(maxNumTrackers);
 		trackerOn.resize(maxNumTrackers,false);
 	};
     
 	//Destructor
-	~TLEInterface(){
-		if(labelFile.is_open())
-			labelFile.close();
-		
-		// VideoFile will release automatically 
-		// by VideoCapture Destructor
-		//if(Cap.isOpened())
-		//	Cap.release();
-	};
+	~TLEInterface(){};
 
 	//load
 	bool load(std::string videoName,std::string labelName);
@@ -102,7 +98,7 @@ public:
 	}
 
 	// Read input label file
-	box readInputLabel();
+	box readInputLabel(std::ifstream* labelFile);
 	
 	// Convert box into Rect
 	cv::Rect box2Rect(box in);
