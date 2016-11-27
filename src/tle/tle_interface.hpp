@@ -30,8 +30,10 @@ typedef struct FRAME{
 	int trackerCount=0;
 	cv::Mat rawFrame;
 	cv::Mat maskFrame;
+	cv::Mat groundtruthFrame;
 	std::vector<cv::Rect> groundtruth;
 	std::vector<bool> groundtruthValid;
+	std::vector<cv::Rect> det;
 }frameData;
 
 typedef struct DASHCAM{
@@ -47,6 +49,7 @@ protected:
 	int totalFrame;				// total Frames for current input 
 	int currentFrameId;			// Current Fream Id
 	cv::Mat returnFrame;		// Frame returned
+	cv::Scalar plotColor;		// Bounding Box Color
 	dashcam input;				// input data struct
 	std::vector<bool>trackerOn;	// Showing each tracker is working or not 
 
@@ -72,16 +75,19 @@ public:
 	~TLEInterface(){};
 
 	//load
-	bool load(std::string videoName,std::string labelName);
+	bool load(std::string videoName,std::string labelName,std::string detName);
 
 	// Resets the track
     void reset();
 
+	// Release input
+	void releaseInput();
+	
     // Indicates if the tracking has ended
     bool isEnded();
 
     // Applies an action and returns the reward. 
-    reward_t act(Action action);
+    reward_t act(Action action,bool skiped=true);
 
     // Returns the vector of legal actions. 
     ActionVect getLegalActionSet();
@@ -100,6 +106,9 @@ public:
 	// Read input label file
 	box readInputLabel(std::ifstream* labelFile);
 	
+	// Read input det file
+	box readInputDet(std::ifstream* labelFile);
+
 	// Convert box into Rect
 	cv::Rect box2Rect(box in);
 

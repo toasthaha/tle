@@ -8,7 +8,7 @@ option(USE_CUDNN "Use cuDNN for Caffe" OFF)
 find_package(OpenCV REQUIRED)
 
 if(NOT WIN32)
-ADD_DEFINITIONS("-std=c++0x -O3")
+ADD_DEFINITIONS("-std=c++0x -O3 -g")
 endif(NOT WIN32)
 
 if(USE_CUDNN)

@@ -4,30 +4,37 @@
 #include <iomanip>
 #include "tle_interface.hpp"
 
-#define PERIOD 20
+#define PERIOD 15
 int main( int argc, char* argv[]){
 	
 	bool gui = true;
-	TLEInterface tle(15,gui);
+	TLEInterface tle(25,gui);
 	
 
 	//for(int t=1 ; t<=976; t++){
 	for(int t=2 ; t<=2; t++){
-  		std::stringstream labelName;
-	  	std::stringstream videoName; 
+  		std::stringstream labelName,videoName,detName; 
 	
 		labelName << "/data/cedl/dashcam/labels/";
 		videoName << "/data/cedl/dashcam/videos/";
+		detName   << "/data/cedl/dashcam/det/";
 	  	labelName << std::setfill('0') << std::setw(6) << t << ".txt";
   		videoName << std::setfill('0') << std::setw(6) << t << ".mp4";
+  		detName   << std::setfill('0') << std::setw(6) << t << "_det.txt";
 
 		std::cout << labelName.str() << std::endl;
   		std::cout << videoName.str() << std::endl;
+  		std::cout << detName.str() << std::endl;
 
-		if (tle.load(videoName.str(),labelName.str())==false){
+		if (tle.load(videoName.str(),labelName.str(),detName.str())==false){
 			std::cout << "open file failed" << std::endl; 
 			continue;
 		}
+
+		std::stringstream outName;
+		outName  << "period" <<  PERIOD << "/" << std::setfill('0') << std::setw(6) <<t;
+		std::ofstream outFile(outName.str());
+		
 
 		std::cout << "open file sucess" << std::endl;
 
@@ -44,14 +51,16 @@ int main( int argc, char* argv[]){
 			score += imScore ;
 			std::cout << std::setw(15) << imScore \
             	      << std::setw(15) << score   << std::endl;
+			outFile   << std::setw(15) << imScore \
+            	      << std::setw(15) << score   << std::endl;
 		}
 
-		std::stringstream outName;
-		outName  << "period" <<  PERIOD << "/" << std::setfill('0') << std::setw(6) <<t;
-		std::ofstream outFile(outName.str());
 		std::cout<<"score "<<score<<std::endl;
 		outFile << score << std::endl;
 	
+
+	
 		tle.reset();
+		tle.releaseInput();
 	}
 }
