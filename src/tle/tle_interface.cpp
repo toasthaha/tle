@@ -94,7 +94,7 @@ reward_t TLEInterface::act(Action action,bool skiped){
 	currentFrame = framePtr->rawFrame.clone();
 	maskFrame    = framePtr->maskFrame.clone();
 	scoreFrame = Mat::zeros(currentFrame.size(),CV_8UC1);
-	returnFrame  = currentFrame;
+	returnFrame  = currentFrame.clone();
 	
 	int trackerCount = framePtr->trackerCount;
 	

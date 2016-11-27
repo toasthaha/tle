@@ -160,7 +160,7 @@ int main(int argc, char** argv) {
 			PlayOneEpisode(tle, dqn, epsilon, true);
 			if (episode % 10 == 0) {
 				// After every 10 episodes, evaluate the current strength
-				const auto eval_score = PlayOneEpisode(tle, dqn, 0/*0.05*/, false);
+				const auto eval_score = PlayOneEpisode(tle, dqn, 0.05 , false);
 				std::cout << dqn.current_iteration() <<"\tevaluation score: " << eval_score << std::endl;
 				logFile << episode << "," << dqn.current_iteration() << "," << eval_score << std::endl;
 			}
