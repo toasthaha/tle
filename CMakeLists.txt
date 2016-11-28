@@ -63,7 +63,8 @@ if(USE_CUDNN)
   target_link_libraries(dqn cudnn)
 endif()
 
-add_executable( runtle src/tle/runtle.cpp src/tle/tle_interface.cpp )
+add_executable( runtle src/tle/runtle.cpp src/tle/tle_interface.cpp)
+target_link_libraries( runtle tle)
 target_link_libraries( runtle ${OpenCV_LIBS})
 target_link_libraries( runtle tracker )
 

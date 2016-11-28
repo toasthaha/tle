@@ -3,55 +3,32 @@
 
 #include <opencv2/opencv.hpp>
 #include <vector>
-#include <iostream>
-#include <fstream>
-#include <gflags/gflags.h>
+#include "tle_input.hpp"
 
 //target tracker
 #include "kcftracker.hpp"
 
 #define DETECT_TIME_PENALTY 8
-static const std::string Version = "0.4";
+static const std::string Version = "0.5";
 
 enum Action {
 	DETECT = 0,
 	TRACK  = 1
 };
-
-typedef double reward_t;
 typedef std::vector<Action> ActionVect;
-typedef struct BOX{
-	std::string category;
-	int frameId,trackId,x1,y1,x2,y2;
-	float confident = 1.0;
-}box;
-
-typedef struct FRAME{
-	int trackerCount=0;
-	cv::Mat rawFrame;
-	cv::Mat maskFrame;
-	cv::Mat groundtruthFrame;
-	std::vector<cv::Rect> groundtruth;
-	std::vector<bool> groundtruthValid;
-	std::vector<cv::Rect> det;
-}frameData;
-
-typedef struct DASHCAM{
-	std::vector<frameData> frames;
-}dashcam;
+typedef double reward_t;
 
 
 class TLEInterface
 {
 protected:
-    int maxNumFrames;  		   	// Maximum number of frames for each episode
-	int maxNumTrackers;			// Maximum number of trackers
-	int totalFrame;				// total Frames for current input 
-	int currentFrameId;			// Current Fream Id
-	cv::Mat returnFrame;		// Frame returned
-	cv::Scalar plotColor;		// Bounding Box Color
-	dashcam input;				// input data struct
-	std::vector<bool>trackerOn;	// Showing each tracker is working or not 
+	int maxNumInput;			 // Maximum number of video load at same time
+    int maxNumFrames;  		   	 // Maximum number of frames for each episode
+	int maxNumTrackers;			 // Maximum number of trackers
+	int targetInputId;			 // Target Input 
+	int currentFrameId;			 // Current Fream Id
+	std::vector<bool> trackerOn; // Showing each tracker is working or not 
+	std::vector<TLEInput> input; // input data struct
 
 	//===================
 	// Tracker setting 
@@ -65,53 +42,65 @@ protected:
 
 public:
 	// Constructor
-	TLEInterface(int trackerNum,bool gui){
+	TLEInterface(int trackerNum,int inputNum){
 		maxNumTrackers = trackerNum;
+		maxNumInput    = inputNum; 
 		tracker.resize(maxNumTrackers);
 		trackerOn.resize(maxNumTrackers,false);
+		input.resize(maxNumInput,trackerNum);
 	};
     
 	//Destructor
 	~TLEInterface(){};
-
-	//load
-	bool load(std::string videoName,std::string labelName,std::string detName);
-
-	// Resets the track
-    void reset();
-
-	// Release input
-	void releaseInput();
 	
-    // Indicates if the tracking has ended
-    bool isEnded();
-
     // Applies an action and returns the reward. 
     reward_t act(Action action,bool skiped=true);
 
-    // Returns the vector of legal actions. 
-    ActionVect getLegalActionSet();
+	// Set target video input
+	void setTargetInput(int id){
+		targetInputId = id;
+	}
+
+	// Check target is ready or not
+	bool checkTargetInput(){
+		return input[targetInputId].valid;
+	}
+
+	// Load video input
+	bool load(std::string videoName,std::string labelName,std::string detName){
+		return input[targetInputId].load(videoName,labelName,detName);
+	};
+
+	// Resets the input video
+    void reset(){
+		input[targetInputId].reset();
+	};
+	
+	// Release the input video
+	void release(){
+		input[targetInputId].release();
+	};
+    
+	// Indicates if the tracking has ended
+    bool isEnded(){
+		return input[targetInputId].isEnded();
+	};
 
 	// Returns tracker count
-	int getTrackerCount();
-
-    // Returns the current game screen
-    cv::Mat getScreen();
+	int getTrackerCount(){
+		return input[targetInputId].getTrackerCount();
+	}
 
 	// Returns the current frame Id
 	int getCurrentFrameId(){
-		return currentFrameId;
+		return input[targetInputId].currentFrameId;
 	}
-
-	// Read input label file
-	box readInputLabel(std::ifstream* labelFile);
 	
-	// Read input det file
-	box readInputDet(std::ifstream* labelFile);
+    // Returns the vector of legal actions. 
+    ActionVect getLegalActionSet();
 
-	// Convert box into Rect
-	cv::Rect box2Rect(box in);
-
+    // Returns the target video screen
+    cv::Mat getScreen();
 };
 
 std::string action_to_string(int a);
