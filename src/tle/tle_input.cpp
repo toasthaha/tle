@@ -35,6 +35,7 @@ bool TLEInput::load(string videoName,string labelName,string detName){
 	// Get total frame number and initialize
 	totalFrame = Cap.get(CV_CAP_PROP_FRAME_COUNT);
 	frames.resize(totalFrame);	
+	
 	// Read video and  Background subtraction
 	cv::Mat currentFrame,tempFrame;
 	cv::BackgroundSubtractorMOG2 bgSubtractor(2,70,false);				
@@ -53,7 +54,6 @@ bool TLEInput::load(string videoName,string labelName,string detName){
 		frames[t].maskFrame = Mat::ones(currentFrame.size(),CV_8UC1);
 		frames[t].maskFrame.setTo(0,tempFrame);
 	}
-	
 	// Read label
 	box in;
 	while(!labelFile.eof()){

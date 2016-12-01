@@ -7,21 +7,17 @@
 #include "prettyprint.hpp"
 #include "dqn.hpp"
 
-
 DEFINE_bool(gui, false, "Open a GUI window");
 DEFINE_bool(cpu, false, "Using CPU model");
 DEFINE_bool(evaluate , false, "Evaluation mode: only playing a game, no updates");
 DEFINE_bool(show_frame, false, "Show the current frame in CUI");
-DEFINE_int32(numtrackers, 20, "Number of trackers");
-DEFINE_int32(numinputs, 10, "Number of inputs load at sametime ");
-DEFINE_int32(memory, 100000, "Capacity of replay memory");
+DEFINE_int32(memory, 80000, "Capacity of replay memory");
 DEFINE_int32(explore, 10000, "Number of iterations needed for epsilon to reach 0.1");
-DEFINE_int32(memory_threshold, 100, "Enough amount of transitions to start learning");
+DEFINE_int32(memory_threshold, 2000, "Enough amount of transitions to start learning");
 DEFINE_int32(skip_frame, 3, "Number of frames skipped");
 DEFINE_double(evaluate_with_epsilon, 0.05, "Epsilon value to be used in evaluation mode");
 DEFINE_double(gamma, 0.95, "Discount factor of future rewards (0,1]");
 DEFINE_double(repeat_games, 1, "Number of games played in evaluation mode");
-DEFINE_string(input, "000001", "Input file");
 DEFINE_string(model, "", "Model file to load");
 DEFINE_string(solver, "dqn_solver.prototxt", "Solver parameter file (*.prototxt)");
 
@@ -103,7 +99,15 @@ int main(int argc, char** argv) {
 	google::InitGoogleLogging(argv[0]);
 	google::InstallFailureSignalHandler();
 	google::LogToStderr();
-	TLEInterface tle(FLAGS_numtrackers,FLAGS_numinputs);
+	
+	int numInputs,numTrackers,numTrain,numValidate;
+	std::ifstream videoList("videolist.txt");
+	videoList >> numTrackers;
+	videoList >> numTrain;
+	videoList >> numValidate;
+	numInputs = numTrain+numValidate;
+	
+	TLEInterface tle(numTrackers,numInputs);
 	
 	// Select running mode
 	if(FLAGS_cpu)
@@ -126,27 +130,29 @@ int main(int argc, char** argv) {
 	std::ofstream logFile("log.csv");
 
 	// Load input file
-	for(int t=1; t<= FLAGS_numinputs ;t++){
+	for(int t = 0, target=0; t< numInputs;t++){
   		std::stringstream labelName,videoName,detName; 
 	
+		videoList >> target;
 		labelName << "/data/cedl/dashcam/labels/";
 		videoName << "/data/cedl/dashcam/videos/";
 		detName   << "/data/cedl/dashcam/det/";
-	  	labelName << std::setfill('0') << std::setw(6) << t << ".txt";
-  		videoName << std::setfill('0') << std::setw(6) << t << ".mp4";
-  		detName   << std::setfill('0') << std::setw(6) << t << "_det.txt";
+	  	labelName << std::setfill('0') << std::setw(6) << target << ".txt";
+  		videoName << std::setfill('0') << std::setw(6) << target << ".mp4";
+  		detName   << std::setfill('0') << std::setw(6) << target << "_det.txt";
 
 		std::cout << labelName.str() << std::endl;
   		std::cout << videoName.str() << std::endl;
 		std::cout << detName.str() << std::endl;
 	
-		tle.setTargetInput(t-1);
+		tle.setTargetInput(t);
 		if (tle.load(videoName.str(),labelName.str(),detName.str())==false){
 			std::cout << "open file failed" << std::endl; 
 			continue;
 		}
 	}
 
+	/*
 	// Just evaluate	
 	if (FLAGS_evaluate) {
 		auto total_score = 0.0;
@@ -160,29 +166,36 @@ int main(int argc, char** argv) {
 		std::cout << "total_score: " << total_score << std::endl;
 		return 0;
 	}
+	*/
 
 	// Trainning
-	for (auto episode = 0; dqn.current_iteration() < 20000 ; episode++) {
-		std::cout << "episode: " << episode << std::endl;
-		const auto epsilon = CalculateEpsilon(dqn.current_iteration());
-		
-		tle.setTargetInput( episode % (FLAGS_numinputs-1) );
-		if( tle.checkTargetInput() == true){
-			PlayOneEpisode(tle, dqn, epsilon, true);
-			if (episode % 10 == 0) {
-				// After every 10 episodes, evaluate the current strength
-				// Using last input video as testcase
-				tle.setTargetInput( FLAGS_numinputs-1 );
-				const auto eval_score = PlayOneEpisode(tle, dqn, 0.02 , false);
-				std::cout << dqn.current_iteration() <<"\tevaluation score: " << eval_score << std::endl;
-				logFile << episode << "," << dqn.current_iteration() << "," << eval_score << std::endl;
+	int episode = 0;
+	while(dqn.current_iteration() < 40000){
+		// Train
+		for(int t=0 ; t<numTrain ; t++){
+			if( tle.checkTargetInput() == true){
+				std::cout << "episode: " << episode++ << std::endl;
+				const auto epsilon = CalculateEpsilon(dqn.current_iteration());
+				tle.setTargetInput( episode % numTrain );
+				PlayOneEpisode(tle, dqn, epsilon, true);
 			}
 		}
+		// Validate
+		logFile << episode << "," << dqn.current_iteration();
+		for(int t=0; t<numValidate ; t++) {
+			double validate_score = 0.0;
+			if( tle.checkTargetInput()==true){
+				tle.setTargetInput( t+numTrain );
+				validate_score += PlayOneEpisode(tle, dqn, 0.02 , false);
+				logFile << "," << validate_score ;
+			}
+		}
+		logFile << std::endl;
 	}
 
 	// Evaluate All
 	logFile << std::endl << std::endl;
-	for(int t=0 ; t < FLAGS_numinputs ; t++){
+	for(int t=0 ; t < numInputs ; t++){
 		tle.setTargetInput(t);
 		const auto eval_score = PlayOneEpisode(tle, dqn, 0.02 , false);
 		logFile << t <<"," << eval_score << std::endl;
