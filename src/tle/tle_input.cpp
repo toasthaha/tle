@@ -10,6 +10,7 @@ bool TLEInput::load(string videoName,string labelName,string detName){
 
 	// reset 
 	currentFrameId = 0;
+	name = videoName;
 
 	// if already open file	
 	if(labelFile.is_open())

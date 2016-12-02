@@ -170,7 +170,7 @@ int main(int argc, char** argv) {
 
 	// Trainning
 	int episode = 0;
-	while(dqn.current_iteration() < 40000){
+	while(dqn.current_iteration() < 100000){
 		// Train
 		for(int t=0 ; t<numTrain ; t++){
 			if( tle.checkTargetInput() == true){
@@ -198,7 +198,7 @@ int main(int argc, char** argv) {
 	for(int t=0 ; t < numInputs ; t++){
 		tle.setTargetInput(t);
 		const auto eval_score = PlayOneEpisode(tle, dqn, 0.02 , false);
-		logFile << t <<"," << eval_score << std::endl;
+		logFile << tle.getName() <<"," << eval_score << std::endl;
 	}
 
 };

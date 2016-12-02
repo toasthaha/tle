@@ -3,6 +3,7 @@
 
 #include <opencv2/opencv.hpp>
 #include <vector>
+#include <string>
 #include "tle_input.hpp"
 
 //target tracker
@@ -94,6 +95,11 @@ public:
 	// Returns the current frame Id
 	int getCurrentFrameId(){
 		return input[targetInputId].currentFrameId;
+	}
+
+	// Return Input video name
+	std::string getName(){
+		return input[targetInputId].name;
 	}
 	
     // Returns the vector of legal actions. 

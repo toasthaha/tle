@@ -16,13 +16,14 @@ FrameDataSp PreprocessScreen(const cv::Mat& raw_screen) {
 
   cv::Mat temp_screen;
   temp_screen = raw_screen.clone();
+  temp_screen.convertTo(temp_screen,CV_32F,(float)1/255,0);
   cv::cvtColor(temp_screen, temp_screen , CV_BGR2GRAY);
   cv::resize(temp_screen,temp_screen,cv::Size(kCroppedFrameSize,kCroppedFrameSize));
   assert(temp_screen.isContinuous());
   for(int a=1; a< kCroppedFrameSize; a++)
 	  for(int b=1; b< kCroppedFrameSize; b++)
-	      (*screen)[a*kCroppedFrameSize+b] = temp_screen.at<uchar>(a,b);
-	  
+	      (*screen)[a*kCroppedFrameSize+b] = temp_screen.at<float>(a,b);
+		
   return screen;
 }
 

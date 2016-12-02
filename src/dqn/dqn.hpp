@@ -26,7 +26,7 @@ constexpr auto kMinibatchDataSize = kInputDataSize * kMinibatchSize;
 constexpr auto kGamma = 0.95f;
 constexpr auto kOutputCount = 18;
 
-using FrameData = std::array<uint8_t, kCroppedFrameDataSize>;
+using FrameData = std::array<float, kCroppedFrameDataSize>;
 using FrameDataSp = std::shared_ptr<FrameData>;
 using InputFrames = std::array<FrameDataSp, 4>;
 using Transition = std::tuple<InputFrames, Action, float, boost::optional<FrameDataSp>>;

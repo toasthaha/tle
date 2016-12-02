@@ -31,6 +31,7 @@ public:
 	int maxNumTrackers;
 	int currentFrameId;
 	std::vector<frameData> frames;
+	std::string name;
 	cv::Mat returnFrame;
 	cv::Scalar plotColor;		
 

@@ -48,7 +48,7 @@ reward_t TLEInterface::act(Action action, bool skiped){
 		if(trackerOn[t]){
 			cv::rectangle(maskFrame,plot,0,-1);
 			cv::rectangle(scoreFrame,plot,1,-1);
-			cv::rectangle(input[targetInputId].returnFrame,plot,input[targetInputId].plotColor,30);
+			//cv::rectangle(input[targetInputId].returnFrame,plot,input[targetInputId].plotColor,30);
 		}
 	}
 	
