@@ -44,11 +44,7 @@ bool TLEInput::load(string videoName,string labelName,string detName){
 		// Read Video
 		Cap.read(currentFrame);	
 		frames[t].rawFrame = currentFrame.clone();
-		// Initialzation groundtruth
-		frames[t].det.resize(maxNumTrackers);
-		frames[t].detValid.resize(maxNumTrackers,false);
-		frames[t].groundtruth.resize(maxNumTrackers);
-		frames[t].groundtruthFrame = Mat::zeros(currentFrame.size(),CV_8UC1);
+		//frames[t].groundtruthFrame = Mat::zeros(currentFrame.size(),CV_8UC1);
 		// Background subtraction
 		bgSubtractor(currentFrame,tempFrame,0.5);
 		frames[t].maskFrame = Mat::ones(currentFrame.size(),CV_8UC1);
@@ -58,15 +54,14 @@ bool TLEInput::load(string videoName,string labelName,string detName){
 	box in;
 	while(!labelFile.eof()){
 		in = readInputLabel(&labelFile);
-		frames[in.frameId-1].groundtruth[in.trackId-1] = box2Rect(in);
-		cv::rectangle(frames[in.frameId-1].groundtruthFrame,box2Rect(in),1,-1);
+		frames[in.frameId-1].groundtruth.push_back( box2Rect(in) );
+		//cv::rectangle(frames[in.frameId-1].groundtruthFrame,box2Rect(in),1,-1);
 	}
 
 	// Read det
 	while(!detFile.eof()){
 		in = readInputDet(&detFile);
-		frames[in.frameId-1].det[in.trackId-1] = box2Rect(in);
-		frames[in.frameId-1].detValid[in.trackId-1] = true;
+		frames[in.frameId-1].det.push_back( box2Rect(in) );
 	}
 	valid = true;
 

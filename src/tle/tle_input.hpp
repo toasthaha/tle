@@ -15,10 +15,10 @@ typedef struct BOX{
 typedef struct FRAME{
 	cv::Mat rawFrame;
 	cv::Mat maskFrame;
-	cv::Mat groundtruthFrame;
+	//cv::Mat groundtruthFrame;
 	std::vector<cv::Rect> groundtruth;
 	std::vector<cv::Rect> det;
-	std::vector<bool> detValid;
+	//std::vector<bool> detValid;
 }frameData;
 
 

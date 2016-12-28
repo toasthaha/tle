@@ -18,7 +18,7 @@ reward_t TLEInterface::act(Action action, bool skiped){
 
 	currentFrame = framePtr->rawFrame.clone();
 	maskFrame    = framePtr->maskFrame.clone();
-	scoreFrame   = Mat::zeros(currentFrame.size(),CV_8UC1);
+	//scoreFrame   = Mat::zeros(currentFrame.size(),CV_8UC1);
 	input[targetInputId].returnFrame = framePtr->rawFrame.clone();
 	
 	// Action
@@ -31,18 +31,19 @@ reward_t TLEInterface::act(Action action, bool skiped){
 				if(skiped==false)
 					input[targetInputId].plotColor = Scalar(255,0,0);
 			}
-
+		}
 		// ACTION DETECTION
-		}else if(action==DETECT){
+		else if(action==DETECT){
 			// Reset each tracker 
-			trackerOn[t] = framePtr->detValid[t];
-			if(trackerOn[t]){
+			if( t < framePtr->det.size() ){
+				trackerOn[t] = true;
 				tracker[t].init( framePtr->det[t], currentFrame );
 				plot = framePtr->det[t];
 				if(skiped==false)
 					input[targetInputId].plotColor = Scalar(0,0,255);
 			}
-
+			else 
+				trackerOn[t] = false;
 		}
 		// Store Target
 		target.push_back(plot);
@@ -68,22 +69,18 @@ reward_t TLEInterface::act(Action action, bool skiped){
 	}
 
 	// Calculate IoU Score
-	int count = 0;
 	double score = 0;
-	for(int t=0; t<maxNumTrackers; t++){
-		if(framePtr->detValid[t]){
-			double iou = 0;
-			for(int idx=0 ; idx<target.size(); idx++){
+	for(int t=0; t < framePtr->groundtruth.size(); t++){
+		double iou = 0;
+		for(int idx=0 ; idx<target.size(); idx++){
 				double i = (framePtr->groundtruth[t] & target[idx]).area();
 				double u = (framePtr->groundtruth[t] | target[idx]).area();
 				if(iou < i/u)
 					iou = i/u;
-			}
-			score += iou;
-			count ++;
 		}
+		score += iou;
 	}
-	score = (count==0)? 0 : score/count; 
+	score = (framePtr->groundtruth.size()==0)? 0 : score/framePtr->groundtruth.size(); 
 	score = score*2 -1;	
 	
 	/*
