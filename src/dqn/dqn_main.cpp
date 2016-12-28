@@ -14,7 +14,7 @@ DEFINE_bool(show_frame, false, "Show the current frame in CUI");
 DEFINE_int32(memory, 80000, "Capacity of replay memory");
 DEFINE_int32(explore, 10000, "Number of iterations needed for epsilon to reach 0.1");
 DEFINE_int32(memory_threshold, 2000, "Enough amount of transitions to start learning");
-DEFINE_int32(skip_frame, 3, "Number of frames skipped");
+DEFINE_int32(skip_frame, 5, "Number of frames skipped");
 DEFINE_double(evaluate_with_epsilon, 0.05, "Epsilon value to be used in evaluation mode");
 DEFINE_double(gamma, 0.95, "Discount factor of future rewards (0,1]");
 DEFINE_double(repeat_games, 1, "Number of games played in evaluation mode");
@@ -41,7 +41,7 @@ double PlayOneEpisode(
 	auto reward = 0.0;
 	Action action;
 	
-	total_score = tle.act(DETECT);
+	tle.act(DETECT);
 	for(int  frame = 1; !tle.isEnded() && frame< FLAGS_skip_frame ;frame++)
 		total_score += tle.act(TRACK);
 
@@ -65,21 +65,21 @@ double PlayOneEpisode(
 			std::copy(past_frames.begin(), past_frames.end(), input_frames.begin());
 		
 			// Select Action
-			action = dqn.SelectAction(input_frames, epsilon);
+			action = dqn.SelectAction(input_frames, epsilon, (int)tle.getFrameBufferNum());
 			auto immediate_score = tle.act(action,false);
 			for(int  frame = 1; !tle.isEnded() && frame< FLAGS_skip_frame ;frame++)
 					immediate_score += tle.act(TRACK);
 			total_score += immediate_score;
 
 			//reward = (immediate_score == 0)? 0 : immediate_score / std::abs(immediate_score);
-			reward = immediate_score / (FLAGS_skip_frame + 8 );
+			reward = immediate_score / FLAGS_skip_frame;
 			//std::cout << reward << std::endl;
 
 			if (update) {
         		// Add the current transition to replay memory
         		const auto transition = tle.isEnded() ?
-	            dqn::Transition(input_frames, action, reward, boost::none) :
-        	    dqn::Transition(input_frames, action, reward, dqn::PreprocessScreen(tle.getScreen()));
+	            dqn::Transition(input_frames, action, reward, boost::none, 0) :
+        	    dqn::Transition(input_frames, action, reward, dqn::PreprocessScreen(tle.getScreen()),tle.getFrameBufferNum());
 	   		    
 				dqn.AddTransition(transition);
         		// If the size of replay memory is enough, update DQN

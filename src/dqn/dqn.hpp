@@ -29,11 +29,12 @@ constexpr auto kOutputCount = 18;
 using FrameData = std::array<float, kCroppedFrameDataSize>;
 using FrameDataSp = std::shared_ptr<FrameData>;
 using InputFrames = std::array<FrameDataSp, 4>;
-using Transition = std::tuple<InputFrames, Action, float, boost::optional<FrameDataSp>>;
+using Transition = std::tuple<InputFrames, Action, float, boost::optional<FrameDataSp>,int>;
 
 using FramesLayerInputData = std::array<float, kMinibatchDataSize>;
 using TargetLayerInputData = std::array<float, kMinibatchSize * kOutputCount>;
 using FilterLayerInputData = std::array<float, kMinibatchSize * kOutputCount>;
+using FrameNumLayerInputData = std::array<float,kMinibatchSize>;
 
 /**
  * Deep Q-Network
@@ -65,7 +66,7 @@ public:
   /**
    * Select an action by epsilon-greedy.
    */
-  Action SelectAction(const InputFrames& input_frames, double epsilon);
+  Action SelectAction(const InputFrames& input_frames, double epsilon,float frameNum);
 
   /**
    * Add a transition to replay memory
@@ -87,13 +88,14 @@ private:
   using BlobSp = boost::shared_ptr<caffe::Blob<float>>;
   using MemoryDataLayerSp = boost::shared_ptr<caffe::MemoryDataLayer<float>>;
 
-  std::pair<Action, float> SelectActionGreedily(const InputFrames& last_frames);
+  std::pair<Action, float> SelectActionGreedily(const InputFrames& last_frames,float frameNum);
   std::vector<std::pair<Action, float>> SelectActionGreedily(
-      const std::vector<InputFrames>& last_frames);
+      const std::vector<InputFrames>& last_frames,const std::vector<float>& frameNum);
   void InputDataIntoLayers(
       const FramesLayerInputData& frames_data,
       const TargetLayerInputData& target_data,
-      const FilterLayerInputData& filter_data);
+      const FilterLayerInputData& filter_data,
+      const FrameNumLayerInputData& frameNum_data);
 
   const ActionVect legal_actions_;
   const std::string solver_param_;
@@ -107,6 +109,7 @@ private:
   MemoryDataLayerSp frames_input_layer_;
   MemoryDataLayerSp target_input_layer_;
   MemoryDataLayerSp filter_input_layer_;
+  MemoryDataLayerSp frameNum_input_layer_;
   TargetLayerInputData dummy_input_data_;
   std::mt19937 random_engine;
 };

@@ -44,16 +44,16 @@ int main( int argc, char* argv[]){
 		float score   = 0;
 		float imScore = 0;
 
-		for(int period=10; period < 100 ; period+=10){
-			score = tle.act(DETECT);
+		for(int period=10; period < 100 ; period+=10,score=0){
+			tle.act(DETECT);
 			for(int frame=1;  tle.isEnded()==false; frame++){
-				if(frame%period==0||tle.getTrackerCount()>20)
+				if(frame%period==0)
 					imScore = tle.act(DETECT);
 				else
 					imScore = tle.act(TRACK);
 
 				score += imScore ;
-				//std::cout << std::setw(15) << imScore \
+				std::cout << std::setw(15) << imScore \
     	        	      << std::setw(15) << score   << std::endl;
 				//outFile   << std::setw(15) << imScore \
             		      << std::setw(15) << score   << std::endl;

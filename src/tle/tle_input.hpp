@@ -13,7 +13,6 @@ typedef struct BOX{
 }box;
 
 typedef struct FRAME{
-	int trackerCount=0;
 	cv::Mat rawFrame;
 	cv::Mat maskFrame;
 	cv::Mat groundtruthFrame;
@@ -29,7 +28,6 @@ public:
 	bool valid = false;
 	int totalFrame;
 	int maxNumTrackers;
-	int currentFrameId;
 	std::vector<frameData> frames;
 	std::string name;
 	cv::Mat returnFrame;
@@ -46,22 +44,11 @@ public:
 	//load
 	bool load(std::string videoName,std::string labelName,std::string detName);
 
-	// Resets the input video
-    void reset();
-	
 	// Release the input video
 	void release();
     
 	// Indicates if the tracking has ended
-    bool isEnded();
-
-	// Returns tracker count
-	int getTrackerCount();
-
-	// Returns the current frame Id
-	int getCurrentFrameId(){
-		return currentFrameId;
-	}
+    bool isEnded(int frameId);
 
 	// Read input label file
 	box readInputLabel(std::ifstream* labelFile);

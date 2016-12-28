@@ -9,7 +9,6 @@ bool TLEInput::load(string videoName,string labelName,string detName){
 	std::ifstream labelFile,detFile;	
 
 	// reset 
-	currentFrameId = 0;
 	name = videoName;
 
 	// if already open file	
@@ -68,35 +67,20 @@ bool TLEInput::load(string videoName,string labelName,string detName){
 		in = readInputDet(&detFile);
 		frames[in.frameId-1].det[in.trackId-1] = box2Rect(in);
 		frames[in.frameId-1].detValid[in.trackId-1] = true;
-		frames[in.frameId-1].trackerCount++;
 	}
-	// EOF will get one extra count  
-	frames[in.frameId-1].trackerCount--;
-
 	valid = true;
 
 	return true;
 };
  
-// Reset the input video
-void TLEInput::reset(){
-	//Set current frame id to 0
-	currentFrameId = 0;
-};
-
 // Release input
 void TLEInput::release(){
 	frames.clear();	
 }
 
-// Returns tracker count
-int TLEInput::getTrackerCount(){
-	return frames[currentFrameId-1].trackerCount;
-};
-
 // Indicates if the tracking has ended
-bool TLEInput::isEnded() {
-	return (currentFrameId>=totalFrame);
+bool TLEInput::isEnded(int frameId) {
+	return (frameId>=totalFrame);
 };
 
 // Read Input label file

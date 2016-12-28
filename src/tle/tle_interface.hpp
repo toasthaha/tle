@@ -9,7 +9,7 @@
 //target tracker
 #include "kcftracker.hpp"
 
-#define DETECT_TIME_PENALTY 8
+#define OUTPUT_FPS 30
 static const std::string Version = "0.5";
 
 enum Action {
@@ -22,12 +22,13 @@ typedef double reward_t;
 
 class TLEInterface
 {
-protected:
+private:
 	int maxNumInput;			 // Maximum number of video load at same time
     int maxNumFrames;  		   	 // Maximum number of frames for each episode
 	int maxNumTrackers;			 // Maximum number of trackers
 	int targetInputId;			 // Target Input 
-	int currentFrameId;			 // Current Fream Id
+	int currentFrameId;			 // Current Frame Id
+	float frameBufferNum;		 // Output buffer number
 	std::vector<bool> trackerOn; // Showing each tracker is working or not 
 	std::vector<TLEInput> input; // input data struct
 
@@ -74,7 +75,8 @@ public:
 
 	// Resets the input video
     void reset(){
-		input[targetInputId].reset();
+		currentFrameId = 0;
+		frameBufferNum = 2*(1./2)*OUTPUT_FPS;
 	};
 	
 	// Release the input video
@@ -84,18 +86,18 @@ public:
     
 	// Indicates if the tracking has ended
     bool isEnded(){
-		return input[targetInputId].isEnded();
+		return input[targetInputId].isEnded(currentFrameId);
 	};
-
-	// Returns tracker count
-	int getTrackerCount(){
-		return input[targetInputId].getTrackerCount();
-	}
 
 	// Returns the current frame Id
 	int getCurrentFrameId(){
-		return input[targetInputId].currentFrameId;
+		return currentFrameId;
 	}
+
+	// Return output buffer count
+	float getFrameBufferNum(){
+		return frameBufferNum;
+	} 
 
 	// Return Input video name
 	std::string getName(){
