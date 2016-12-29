@@ -7,57 +7,56 @@
 #include <fstream>
 
 typedef struct BOX{
-	std::string category;
-	int frameId,trackId,x1,y1,x2,y2;
-	float confident = 1.0;
+    std::string category;
+    int frameId,trackId,x1,y1,x2,y2;
+    float confident = 1.0;
 }box;
 
 typedef struct FRAME{
-	cv::Mat rawFrame;
-	cv::Mat maskFrame;
-	//cv::Mat groundtruthFrame;
-	std::vector<cv::Rect> groundtruth;
-	std::vector<cv::Rect> det;
-	//std::vector<bool> detValid;
+    cv::Mat rawFrame;
+    cv::Mat maskFrame;
+    //cv::Mat groundtruthFrame;
+    std::vector<cv::Rect> groundtruth;
+    std::vector<cv::Rect> det;
+    //std::vector<bool> detValid;
 }frameData;
 
 
 class TLEInput
 {
 public:
-	bool valid = false;
-	int totalFrame;
-	int maxNumTrackers;
-	std::vector<frameData> frames;
-	std::string name;
-	cv::Mat returnFrame;
-	cv::Scalar plotColor;		
+    bool valid = false;
+    int totalFrame;
+    int maxNumTrackers;
+    std::vector<frameData> frames;
+    std::string name;
+    cv::Mat returnFrame;
 
 public:
-	// Constructor
-	TLEInput(int TrackerNum){
-		maxNumTrackers = TrackerNum;
-	};
+    // Constructor
+    TLEInput(int TrackerNum){
+        maxNumTrackers = TrackerNum;
+    };
 
-	~TLEInput(){};
+    ~TLEInput(){};
 
-	//load
-	bool load(std::string videoName,std::string labelName,std::string detName);
+    //load
+    bool load(std::string videoName,std::string labelName,std::string detName);
 
-	// Release the input video
-	void release();
+    // Release the input video
+    void release();
     
-	// Indicates if the tracking has ended
+    // Indicates if the tracking has ended
     bool isEnded(int frameId);
 
-	// Read input label file
-	box readInputLabel(std::ifstream* labelFile);
-	
-	// Read input det file
-	box readInputDet(std::ifstream* labelFile);
+    // Read input label file
+    box readInputLabel(std::ifstream* labelFile);
+    
+    // Read input det file
+    box readInputDet(std::ifstream* labelFile);
 
-	// Convert box into Rect
-	cv::Rect box2Rect(box in);
+    // Convert box into Rect
+    cv::Rect box2Rect(box in);
 
 };
 

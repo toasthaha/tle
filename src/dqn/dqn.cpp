@@ -22,10 +22,10 @@ FrameDataSp PreprocessScreen(const cv::Mat& raw_screen) {
   cv::resize(temp_screen,temp_screen,cv::Size(kCroppedFrameSize,kCroppedFrameSize));
   assert(temp_screen.isContinuous());
   for(int a=1; a< kCroppedFrameSize; a++)
-  	for(int b=1; b< kCroppedFrameSize; b++){
-		(*screen)[a*kCroppedFrameSize+b] = temp_screen.at<char>(a,b)/255.0;
-	}
-		
+    for(int b=1; b< kCroppedFrameSize; b++){
+        (*screen)[a*kCroppedFrameSize+b] = temp_screen.at<char>(a,b)/255.0;
+    }
+        
   return screen;
 }
 
@@ -152,7 +152,7 @@ std::vector<std::pair<Action, float>> DQN::SelectActionGreedily(
           frames_input.begin() + i * kInputDataSize +
               j * kCroppedFrameDataSize);
     }
-	frameNum_input[i] = frameNum[i];
+    frameNum_input[i] = frameNum[i];
   }
   InputDataIntoLayers(frames_input, dummy_input_data_, dummy_input_data_,frameNum_input);
   net_->ForwardPrefilled(nullptr);
@@ -224,7 +224,7 @@ void DQN::Update() {
     }
     target_last_frames[kInputFrameCount - 1] = std::get<3>(transition).get();
     target_last_frames_batch.push_back(target_last_frames);
-	target_last_frameNum_batch.push_back(std::get<4>(transition));
+    target_last_frameNum_batch.push_back(std::get<4>(transition));
   }
   const auto actions_and_values =
       SelectActionGreedily(target_last_frames_batch,target_last_frameNum_batch);
@@ -280,7 +280,7 @@ void DQN::InputDataIntoLayers(
       const FramesLayerInputData& frames_input,
       const TargetLayerInputData& target_input,
       const FilterLayerInputData& filter_input,
-	  const FrameNumLayerInputData& frameNum_input) {
+      const FrameNumLayerInputData& frameNum_input) {
   frames_input_layer_->Reset(
       const_cast<float*>(frames_input.data()),
       dummy_input_data_.data(),
